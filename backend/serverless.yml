@@ -12,12 +12,6 @@
 # Happy Coding!
 
 service: serverless-appsync-backend
-# app and org for use with dashboard.serverless.com
-#app: your-app-name
-#org: your-org-name
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
 frameworkVersion: "3"
 
 provider:
@@ -30,39 +24,24 @@ provider:
 plugins:
    - serverless-appsync-plugin
 
-	
-custom:
-  appSync:
-    name: bookstoreAppSyncAPI
-    authenticationType: AMAZON_COGNITO_USER_POOLS
-    userPoolConfig:
-      awsRegion: us-east-2
-      defaultAction: ALLOW
+appSync:
+  name: bookstoreAppSyncAPI
+  authentication:
+    type: AMAZON_COGNITO_USER_POOLS
+    config:
       userPoolId: !Ref cognitoUserPool
-    mappingTemplatesLocation: mapping-templates
-    mappingTemplates:
-      - type: Query
-        field: getBookByID
-        dataSource: booksTable
-      - type: Mutation
-        field: createBook
-        dataSource: booksTable 
-    dateSources:
-      - type: AMAZON_DYNAMODB
-        name: booksTable
-        config:
-          tableName: !Ref booksTable
-
-
+  resolvers:
+    Query.getBookByID:
+      functions:
+        - dataSource: booksTable
+    Mutation.createBook:
+      functions:
+        - dataSource: booksTable 
+  dataSources:
+    booksTable:
+      type: AMAZON_DYNAMODB
+      config:
+        tableName: !Ref booksTable
 resources:
  Resources:
   ${file(resources.yml)}
-
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
