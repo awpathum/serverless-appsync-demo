@@ -97,35 +97,6 @@ cognitoAdminIAMRole:
                 - !GetAtt orderTable.Arn
     RoleName: "bookstore-admin-role"
 
-
-# cognitoAdminIAMRole:
-#   Type: 'AWS::IAM::Role'
-#   Properties:
-#     AssumeRolePolicyDocument:
-#       Version: "2012-10-17"
-#       Statement:
-#         - Effect: Allow
-#           Principal:
-#             Service:
-#               - ec2.amazonaws.com
-#           Action:
-#             - 'sts:AssumeRole'
-#     Path: /
-#     Policies:
-#       - PolicyName: root
-#         PolicyDocument:
-#           Version: "2012-10-17"
-#           Statement:
-#             - Effect: Allow
-#               Action: '*'
-#               Resource: '*'
-# RootInstanceProfile:
-#   Type: 'AWS::IAM::InstanceProfile'
-#   Properties:
-#     Path: /
-#     Roles:
-#       - !Ref cognitoAdminIAMRole
-
 #Cognito user pool customer group
 cognitoCustomerGroup:
   Type: AWS::Cognito::UserPoolGroup
@@ -169,4 +140,44 @@ cognitoUserIAMRole:
               Resource:
                 - !GetAtt booksTable.Arn
     RoleName: "bookstore-customer-role"
+
+cognitoIdentityPoolRoleAttachment:
+  Type: AWS::Cognito::IdentityPoolRoleAttachment
+  Properties: 
+    IdentityPoolId: !Ref cognitoIdentityPool
+    Roles:
+      unauthenticated: !GetAtt cognitoUnauthIAMRole.Arn
   
+cognitoIdentityPool:
+  Type: AWS::Cognito::IdentityPool
+  Properties: 
+    AllowUnauthenticatedIdentities: true
+    CognitoIdentityProviders: 
+      - ClientId: !Ref cognitoUserPoolClient
+        ProviderName: !GetAtt cognitoUserPool.ProviderName
+    IdentityPoolName: BookstoreIdentityPool
+
+cognitoUnauthIAMRole:
+  Type: AWS::IAM::Role
+  Properties: 
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: "Allow"
+          Principal:
+            Federated:
+              - "cognito-identity.amazonaws.com"
+          Action:
+            - "sts:AssumeRoleWithWebIdentity"
+    Description: "Customer goup users will assume this role"
+    Policies: 
+      - PolicyName: "bookstore-unauth-group-policy"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "appsync:GraphQL"
+              Resource:
+                # - !GetAtt orderTable.Arn
+                - "arn:aws:appsync:us-east-2:895363817212:apis/n376dd3tencv5j54hzvd34akru/types/Query/fields/getBookById"
