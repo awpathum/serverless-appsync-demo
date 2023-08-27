@@ -1,11 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 import './App.css';
 import { API, graphqlOperation } from "aws-amplify";
 import { getBookById } from "./graphql/queries/book";
+import { onCreateBook } from "./graphql/subscriptions/book";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [book,setBook] = useState(null);
+
+  useEffect(() => {
+    const subscription = API.graphql(graphqlOperation(onCreateBook)).subscribe({
+      next: (result) => {
+        console.log(result);
+        toast("new book added!");
+        const newBook = result.value.data.onCreateBook;
+        setBook(newBook);
+      }
+    })
+  }, [])
+
   const getBook = async () => {
     // make a call to appSync api
     // const book = await API.graphql(graphqlOperation(getBookById, {id: "78a59f13-70d1-4a31-9631-ba39882b0533"}));
@@ -37,5 +52,5 @@ function App() {
   );
 }
 
-// export default withAuthenticator(App);
-export default App;
+export default withAuthenticator(App);
+// export default App;
