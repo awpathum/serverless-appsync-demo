@@ -5,7 +5,7 @@ schema {
 
 type Query {
     getBookById(bookId : ID!): Book! @aws_iam
-    listBooks(limit: Int!, nextToke: String): BooksPage!
+    listBooks(limit: Int!, nextToken: String): BooksPage!
     myOrders(limit: Int!, nextToken: String): OrderItemsPage!
 }
 

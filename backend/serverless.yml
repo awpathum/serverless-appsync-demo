@@ -38,6 +38,11 @@ appSync:
         - dataSource: booksTable
           request: mapping-templates/Query.getBookById.request.vtl
           response: mapping-templates/Query.getBookById.response.vtl
+    Query.listBooks:
+      functions:
+        - dataSource: booksTable
+          request: mapping-templates/Query.listBooks.request.vtl
+          response: mapping-templates/Query.listBooks.response.vtl
     Mutation.createBook:
       functions:
         - dataSource: booksTable 
